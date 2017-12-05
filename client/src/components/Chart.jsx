@@ -10,6 +10,7 @@ class Chart extends React.Component {
     this.state = {
       rawData: [],
       redraw: false,
+      click: false,
       minDate: new Date(),
       maxDate: new Date('0000-01-01T08:00:00Z'),
       chartData: {
@@ -36,7 +37,7 @@ class Chart extends React.Component {
     let plotpoints = this.state.rawData;
     let data = plotpoints.map(item => {
       let color;
-      if (new Date(item.start_time) < this.state.minDate) {
+      if (new Date(item.start_time) <= this.state.minDate) {
         this.state.minDate = new Date(item.start_time);
       }
 
@@ -64,74 +65,77 @@ class Chart extends React.Component {
     });
 
     this.state.chartData.datasets = data;
-    console.log(this.state);
   }
 
   handleDataClick (evt, item) {
-    // let index = item[0]._datasetIndex;
-    // let dataPoint = this.state.chartData.datasets[index];
-    // dataPoint.selected = true;
-    // dataPoint.border = "thick solid blue";
-    // dataPoint.pointRadius = 10;
-    // dataPoint.radius = 10;
-    // console.log(evt, item)
-    // console.log(this.state.chartData.datasets[index]);
-    // let model = item[0]._model;
-    // model.backgroundColor = 'blue';
-    // model.borderColor = 'blue';
-    // model.hitRadius = 10;
-    // model.radius = 10;
-    // console.log(model);
+    if (item[0]) {
+      let model = item[0]._model;
+
+      if (this.state.click) {
+        this.getData();
+      } else {
+        model.backgroundColor = 'white';
+        model.borderColor = 'blue';
+        model.hitRadius = 10;
+        model.borderWidth = 17;
+        model.radius = 10;
+        this.state.click = true;
+        this.state.minDate = this.state.minDate.setDate(this.state.minDate.getDate() + 1);
+      }
+    }
   }
 
   update () {
     this.setState({
-      redraw: !this.state.redraw
+      redraw: !this.state.redraw,
+      click: false,
+      count: 0
     }, () => {
       this.state.redraw = false;
     });
   }
 
   render() {
-    let minDate = this.state.minDate.setDate(this.state.minDate.getDate() - 1);
-    let maxDate = this.state.maxDate.setDate(this.state.maxDate.getDate() + 1);
+    
+    let mxDate = this.state.maxDate.setDate(this.state.maxDate.getDate() + 1);
+    let mnDate = this.state.minDate.setDate(this.state.minDate.getDate() - 1);
+
     return (
       <div className="chart">
         <Scatter 
           className = "scatterPlot"
           data={this.state.chartData} 
           redraw = {this.state.redraw}
+          
           options={{
             events: ['click'],
-            onClick: (evt, item) => {
-              this.handleDataClick(evt, item);
+            onClick: (evt, el) => this.handleDataClick(evt, el),
+            animation: {
+              duration: 0
             },
             tooltips: {
               enabled: false,
               display: false,
             },
             legend: false,
-            tooltips: {
-              mode: 'point'
-            },
             scales: {
               xAxes: [{
                 type: 'time',
                 gridLines: {
-                  color: "rgba(0, 0, 0, 0)",
+                  color: 'rgba(0, 0, 0, 0)',
                 },
                 time: {
                   unit: 'day',
                   displayFormats: {
                     month: 'MMM DD'
                   },
-                  min: minDate,
-                  max: maxDate,
+                  min: mnDate,
+                  max: mxDate,
                 }
               }],
               yAxes: [{
                 gridLines: {
-                  borderDash: [8,4]
+                  borderDash: [8, 4]
                 },              
               }]
 
