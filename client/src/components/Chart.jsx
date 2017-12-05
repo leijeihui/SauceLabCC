@@ -1,16 +1,17 @@
 import React from 'react';
 import {Scatter} from 'react-chartjs-2';
-import plotpoints from '../data/data';
-
-
+import axios from 'axios';
+//import plotpoints from '../data/data';
 
 class Chart extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      rawData: [],
+      redraw: false,
       minDate: new Date(),
-      maxDate: null,
+      maxDate: new Date('0000-01-01T08:00:00Z'),
       chartData: {
         datasets: []
       }
@@ -20,19 +21,27 @@ class Chart extends React.Component {
   }
 
   componentWillMount() {
-    this.chartData();
+    this.getData();
+  }
+
+  getData () {
+    axios.get('/api/getData').then(data => {
+      this.state.rawData = data.data;
+      this.chartData();
+      this.update();
+    });
   }
   
   chartData () {
+    let plotpoints = this.state.rawData;
     let data = plotpoints.map(item => {
       let color;
-      let date = new Date(item.start_time);
-      if (date < this.state.minDate) {
-        this.state.minDate = date;
+      if (new Date(item.start_time) < this.state.minDate) {
+        this.state.minDate = new Date(item.start_time);
       }
 
-      if (date > this.state.maxDate || !!this.state.maxDate) {
-        this.state.maxDate = date;
+      if (new Date(item.start_time) > this.state.maxDate || !!this.state.maxDate) {
+        this.state.maxDate = new Date(item.start_time);
       }
 
       if (item.status === 'pass') {
@@ -45,7 +54,7 @@ class Chart extends React.Component {
 
       return {
         data: [{
-          x: date,
+          x: new Date(item.start_time),
           y: item.duration
         }],
         backgroundColor: [color],
@@ -54,7 +63,7 @@ class Chart extends React.Component {
       };
     });
 
-    this.state.chartData.datasets = data
+    this.state.chartData.datasets = data;
     console.log(this.state);
   }
 
@@ -67,25 +76,39 @@ class Chart extends React.Component {
     // dataPoint.radius = 10;
     // console.log(evt, item)
     // console.log(this.state.chartData.datasets[index]);
-    let model = item[0]._model;
-    model.backgroundColor = 'blue';
-    model.borderColor = 'blue';
-    model.hitRadius = 10;
-    model.radius = 10;
-    console.log(model);
+    // let model = item[0]._model;
+    // model.backgroundColor = 'blue';
+    // model.borderColor = 'blue';
+    // model.hitRadius = 10;
+    // model.radius = 10;
+    // console.log(model);
+  }
+
+  update () {
+    this.setState({
+      redraw: !this.state.redraw
+    }, () => {
+      this.state.redraw = false;
+    });
   }
 
   render() {
-
+    let minDate = this.state.minDate.setDate(this.state.minDate.getDate() - 1);
+    let maxDate = this.state.maxDate.setDate(this.state.maxDate.getDate() + 1);
     return (
       <div className="chart">
         <Scatter 
           className = "scatterPlot"
           data={this.state.chartData} 
+          redraw = {this.state.redraw}
           options={{
             events: ['click'],
             onClick: (evt, item) => {
               this.handleDataClick(evt, item);
+            },
+            tooltips: {
+              enabled: false,
+              display: false,
             },
             legend: false,
             tooltips: {
@@ -102,8 +125,8 @@ class Chart extends React.Component {
                   displayFormats: {
                     month: 'MMM DD'
                   },
-                  min: this.state.minDate.setDate(this.state.minDate.getDate() - 1),
-                  max: this.state.maxDate.setDate(this.state.maxDate.getDate() + 1),
+                  min: minDate,
+                  max: maxDate,
                 }
               }],
               yAxes: [{
