@@ -1,0 +1,7 @@
+node_modules/
+client/public/bundle.js
+*.log
+build/
+dist/
+client/public/bundle.js
+client/src/styles/*.css
