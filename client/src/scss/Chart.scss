@@ -1,0 +1,42 @@
+.chart {
+  height: 80vh;
+
+
+  .scatterPlot {
+    width: 100vw !important;
+    height: 80vh !important;
+  }
+}
+
+.legend-ctn {
+  width: 100%;
+  margin: 0 auto;
+  margin-top: 20px;
+  text-align: center;
+  display: inline-block;
+
+  .legend-key {
+    width: 20%;
+    padding-right: 20px;
+  }
+
+
+}
+.legend-logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 20px;
+  display: inline-block;
+
+}
+.pass {
+  background-color: green;
+}
+
+.error {
+  background-color: orange;
+}
+
+.fail {
+  background-color: red;
+}

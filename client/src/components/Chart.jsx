@@ -1,6 +1,7 @@
 import React from 'react';
 import {Scatter} from 'react-chartjs-2';
 import axios from 'axios';
+import css from '../styles/Chart.css';
 //import plotpoints from '../data/data';
 
 class Chart extends React.Component {
@@ -107,7 +108,8 @@ class Chart extends React.Component {
           className = "scatterPlot"
           data={this.state.chartData} 
           redraw = {this.state.redraw}
-          
+          height = '45%'
+          width = '100%'
           options={{
             events: ['click'],
             onClick: (evt, el) => this.handleDataClick(evt, el),
@@ -124,6 +126,10 @@ class Chart extends React.Component {
             },
             scales: {
               xAxes: [{
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Date'
+                },
                 type: 'time',
                 gridLines: {
                   color: 'rgba(0, 0, 0, 0)',
@@ -138,6 +144,10 @@ class Chart extends React.Component {
                 }
               }],
               yAxes: [{
+                scaleLabel: {
+                  display: true,
+                  labelString: 'Seconds'
+                },
                 gridLines: {
                   borderDash: [8, 4]
                 },              
@@ -146,6 +156,11 @@ class Chart extends React.Component {
             }
           }}
         />
+        <div className="legend-ctn">
+          <span className="legend-key"><span className="legend-logo pass"></span> Pass</span>
+          <span className="legend-key"><span className="legend-logo error"></span> Error</span>
+          <span className="legend-key"><span className="legend-logo fail"></span>  Fail</span>
+        </div>
       </div>
 
     );
