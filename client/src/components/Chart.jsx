@@ -2,7 +2,6 @@ import React from 'react';
 import {Scatter} from 'react-chartjs-2';
 import axios from 'axios';
 import css from '../styles/Chart.css';
-//import plotpoints from '../data/data';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -12,6 +11,7 @@ class Chart extends React.Component {
       rawData: [],
       redraw: false,
       click: false,
+      set: false, //for counterweight temp solution
       minDate: new Date(),
       maxDate: new Date('0000-01-01T08:00:00Z'),
       chartData: {
@@ -20,17 +20,22 @@ class Chart extends React.Component {
     };
 
     this.handleDataClick = this.handleDataClick.bind(this);
+    this.handleDateSubmit = this.handleDateSubmit.bind(this);
   }
 
   componentWillMount() {
     this.getData();
   }
 
-  getData () {
-    axios.get('/api/getData').then(data => {
+  getData (min, max) {
+    axios.get('/api/getData', {
+      params: {
+        min: min,
+        max: max
+      }
+    }).then(data => {
       this.state.rawData = data.data;
       this.chartData();
-      this.update();
     });
   }
   
@@ -66,6 +71,7 @@ class Chart extends React.Component {
     });
 
     this.state.chartData.datasets = data;
+    this.update();
   }
 
   handleDataClick (evt, item) {
@@ -74,8 +80,11 @@ class Chart extends React.Component {
       let model = item[0]._model;
 
       if (this.state.click === index) {
-        this.state.minDate = this.state.minDate.setDate(this.state.minDate.getDate() + 1);
-        this.getData();
+        this.state.minDate = new Date(this.state.minDate.setDate(this.state.minDate.getDate() + 1)); //for counterweight temp solution
+        if (this.state.set) {
+          this.state.maxDate = new Date(this.state.maxDate.setDate(this.state.maxDate.getDate() - 1)); //for counterweight temp solution
+        }
+        this.getData(this.state.minDate, this.state.maxDate);
       } else {
         model.backgroundColor = 'white';
         model.borderColor = 'blue';
@@ -96,6 +105,30 @@ class Chart extends React.Component {
     });
   }
 
+  handleDateSubmit(e) {
+    e.preventDefault();
+    this.state.set = true;
+    if (this.refs.minDate.value) {
+      this.state.minDate = new Date(this.refs.minDate.value);
+    } else {
+      this.state.minDate = new Date(this.state.minDate.setDate(this.state.minDate.getDate() + 1)); //for counterweight temp solution
+    }
+
+    if (this.refs.maxDate.value) {
+      this.state.maxDate = new Date(this.refs.maxDate.value);
+    }
+
+    if (this.state.set) {
+      this.state.maxDate = new Date(this.state.maxDate.setDate(this.state.maxDate.getDate() - 1)); //for counterweight temp solution
+    }
+
+    this.refs.minDate.value = '';
+    this.refs.maxDate.value = '';
+
+    this.getData(this.state.minDate, this.state.maxDate);
+
+  }
+
   render() {
     
     let mxDate = this.state.maxDate.setDate(this.state.maxDate.getDate() + 1);
@@ -103,6 +136,11 @@ class Chart extends React.Component {
 
     return (
       <div className="chart">
+        <form>
+          Min Date: <input type="date" className="form-date-input" ref ="minDate"/> <br />
+          Max Date: <input type="date" className="form-date-input" ref="maxDate"/> <br />
+          <button onClick={(e) => this.handleDateSubmit(e)}>Submit</button>
+        </form>
         <Scatter 
           className = "scatterPlot"
           data={this.state.chartData} 
@@ -149,7 +187,10 @@ class Chart extends React.Component {
                 },
                 gridLines: {
                   borderDash: [8, 4]
-                },              
+                }, 
+                ticks: {
+                  beginAtZero: true
+                }           
               }]
 
             }

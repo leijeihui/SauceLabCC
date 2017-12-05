@@ -90,12 +90,12 @@ module.exports = [
     'duration': 170,
   },
   {
-    'start_time': '2017-12-04T13:31:12Z',
+    'start_time': '2017-12-03T13:31:12Z',
     'status': 'pass',
     'duration': 188,
   },
   {
-    'start_time': '2017-12-04T20:55:12Z',
+    'start_time': '2017-12-03T20:55:12Z',
     'status': 'pass',
     'duration': 160,
   },
