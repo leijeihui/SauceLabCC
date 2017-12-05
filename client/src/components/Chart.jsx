@@ -90,8 +90,7 @@ class Chart extends React.Component {
   update () {
     this.setState({
       redraw: !this.state.redraw,
-      click: false,
-      count: 0
+      click: false
     }, () => {
       this.state.redraw = false;
     });
