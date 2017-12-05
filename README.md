@@ -7,3 +7,6 @@ BUG
   
   * Assumption: Something with JS Dates causing shift.
   * Temp Solution: Provide counter weight to balance out shift.
+
+  * Minor bug: max date does not affect the chart if date is in the future
+  
