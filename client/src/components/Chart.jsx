@@ -68,10 +68,12 @@ class Chart extends React.Component {
   }
 
   handleDataClick (evt, item) {
+    let index = item[0]._datasetIndex;
     if (item[0]) {
       let model = item[0]._model;
 
-      if (this.state.click) {
+      if (this.state.click === index) {
+        this.state.minDate = this.state.minDate.setDate(this.state.minDate.getDate() + 1);
         this.getData();
       } else {
         model.backgroundColor = 'white';
@@ -79,8 +81,7 @@ class Chart extends React.Component {
         model.hitRadius = 10;
         model.borderWidth = 17;
         model.radius = 10;
-        this.state.click = true;
-        this.state.minDate = this.state.minDate.setDate(this.state.minDate.getDate() + 1);
+        this.state.click = index;
       }
     }
   }
@@ -114,10 +115,13 @@ class Chart extends React.Component {
               duration: 0
             },
             tooltips: {
-              enabled: false,
-              display: false,
+              enabled: true,
+              display: true,
             },
-            legend: false,
+            legend: {
+              display: true,
+              labels: ['pass', 'error', 'fail']
+            },
             scales: {
               xAxes: [{
                 type: 'time',
