@@ -145,7 +145,7 @@ class Chart extends React.Component {
           className = "scatterPlot"
           data={this.state.chartData} 
           redraw = {this.state.redraw}
-          height = '45%'
+          height = '40%'
           width = '100%'
           options={{
             events: ['click'],
