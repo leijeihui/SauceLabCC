@@ -107,7 +107,6 @@ class Chart extends React.Component {
 
   handleDateSubmit(e) {
     e.preventDefault();
-    this.state.set = true;
     if (this.refs.minDate.value) {
       this.state.minDate = new Date(this.refs.minDate.value);
     } else {
@@ -122,6 +121,7 @@ class Chart extends React.Component {
       this.state.maxDate = new Date(this.state.maxDate.setDate(this.state.maxDate.getDate() - 1)); //for counterweight temp solution
     }
 
+    this.state.set = true; //for counterweight temp solution
     this.refs.minDate.value = '';
     this.refs.maxDate.value = '';
 
