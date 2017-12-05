@@ -115,17 +115,17 @@ class Chart extends React.Component {
 
     if (this.refs.maxDate.value) {
       this.state.maxDate = new Date(this.refs.maxDate.value);
-    }
-
-    if (this.state.set) {
+    } else {
       this.state.maxDate = new Date(this.state.maxDate.setDate(this.state.maxDate.getDate() - 1)); //for counterweight temp solution
     }
+
 
     this.state.set = true; //for counterweight temp solution
     this.refs.minDate.value = '';
     this.refs.maxDate.value = '';
 
     this.getData(this.state.minDate, this.state.maxDate);
+    
 
   }
 
