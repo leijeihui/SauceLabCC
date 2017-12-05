@@ -6,7 +6,7 @@
   "scripts": {
     "build-css": "node-sass-chokidar  client/src/scss/ -o client/src/styles/",
     "watch-css": "npm run build-css && node-sass-chokidar client/src/scss/ -o client/src/styles --watch --recursive",
-    "start": "./node_modules/.bin/webpack --watch & nodemon --ignore 'client/**/*' ./server/server.js & clear && npm run build-css && npm run watch-css"
+    "start": "./node_modules/.bin/webpack --watch & nodemon --ignore 'client/**/*' ./server/server.js & clear && open http://localhost:8000 && npm run watch-css"
   },
   "author": "",
   "license": "ISC",
