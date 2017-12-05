@@ -12,8 +12,6 @@ module.exports = {
         }
       });
     }
-
-    console.log(dp.length);
     res.json(dp);
   }
 };
