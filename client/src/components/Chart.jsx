@@ -2,6 +2,8 @@ import React from 'react';
 import {Scatter} from 'react-chartjs-2';
 import axios from 'axios';
 import css from '../styles/Chart.css';
+import helpers from '../helpers/helpers';
+import optionsFn from '../helpers/chartOptions';
 
 class Chart extends React.Component {
   constructor(props) {
@@ -28,43 +30,40 @@ class Chart extends React.Component {
   }
 
   getData (min, max) {
-    axios.get('/api/getData', {
-      params: {
-        min: min,
-        max: max
-      }
-    }).then(data => {
-      this.state.rawData = data.data;
-      this.chartData();
+    const params = {
+      min: min,
+      max: max
+    };
+
+    helpers.getDataCall(params, (obj) => {
+      this.chartData(obj.data);
     });
   }
   
-  chartData () {
-    let plotpoints = this.state.rawData;
-    let data = plotpoints.map(item => {
-      let color;
-      if (new Date(item.start_time) <= this.state.minDate) {
-        this.state.minDate = new Date(item.start_time);
+  chartData (plotpoints) {
+    const data = plotpoints.map(item => {
+      const startTime = new Date(item.start_time);
+      const colorObj = {
+        pass: 'green',
+        error: 'orange',
+        fail: 'red'
+      };
+
+      if (startTime <= this.state.minDate) {
+        this.state.minDate = startTime;
       }
 
-      if (new Date(item.start_time) > this.state.maxDate || !!this.state.maxDate) {
-        this.state.maxDate = new Date(item.start_time);
+      if (startTime > this.state.maxDate || !!this.state.maxDate) {
+        this.state.maxDate = startTime;
       }
 
-      if (item.status === 'pass') {
-        color = 'green';
-      } else if (item.status === 'error') {
-        color = 'orange';
-      } else {
-        color = 'red';
-      }
 
       return {
         data: [{
           x: new Date(item.start_time),
           y: item.duration
         }],
-        backgroundColor: [color],
+        backgroundColor: colorObj[item.status],
         pointRadius: 10,
         radius: 10
       };
@@ -74,15 +73,15 @@ class Chart extends React.Component {
     this.update();
   }
 
-  handleDataClick (evt, item) {
-    let index = item[0]._datasetIndex;
+  handleDataClick (item) {
     if (item[0]) {
-      let model = item[0]._model;
+      const index = item[0]._datasetIndex;
+      const model = item[0]._model;
 
       if (this.state.click === index) {
-        this.state.minDate = new Date(this.state.minDate.setDate(this.state.minDate.getDate() + 1)); //for counterweight temp solution
+        this.handleCounterWeight('minDate'); //for counterweight temp solution
         if (this.state.set) {
-          this.state.maxDate = new Date(this.state.maxDate.setDate(this.state.maxDate.getDate() - 1)); //for counterweight temp solution
+          this.handleCounterWeight('maxDate'); //for counterweight temp solution
         }
         this.getData(this.state.minDate, this.state.maxDate);
       } else {
@@ -110,29 +109,37 @@ class Chart extends React.Component {
     if (this.refs.minDate.value) {
       this.state.minDate = new Date(this.refs.minDate.value);
     } else {
-      this.state.minDate = new Date(this.state.minDate.setDate(this.state.minDate.getDate() + 1)); //for counterweight temp solution
+      this.handleCounterWeight('minDate'); //for counterweight temp solution
     }
 
     if (this.refs.maxDate.value) {
       this.state.maxDate = new Date(this.refs.maxDate.value);
     } else {
-      this.state.maxDate = new Date(this.state.maxDate.setDate(this.state.maxDate.getDate() - 1)); //for counterweight temp solution
+      this.handleCounterWeight('maxDate'); //for counterweight temp solution
     }
-
 
     this.state.set = true; //for counterweight temp solution
     this.refs.minDate.value = '';
     this.refs.maxDate.value = '';
-
     this.getData(this.state.minDate, this.state.maxDate);
-    
+  }
 
+  handleCounterWeight(type) {
+    let counterWeight;
+
+    if (type === 'minDate') {
+      counterWeight = 1;
+    } else {
+      counterWeight = -1;
+    }
+
+    this.state[type] = new Date(this.state[type].setDate(this.state[type].getDate() + counterWeight));
   }
 
   render() {
     
-    let mxDate = this.state.maxDate.setDate(this.state.maxDate.getDate() + 1);
-    let mnDate = this.state.minDate.setDate(this.state.minDate.getDate() - 1);
+    const maxDate = this.state.maxDate.setDate(this.state.maxDate.getDate() + 1);
+    const minDate = this.state.minDate.setDate(this.state.minDate.getDate() - 1);
 
     return (
       <div className="chart">
@@ -145,56 +152,9 @@ class Chart extends React.Component {
           className = "scatterPlot"
           data={this.state.chartData} 
           redraw = {this.state.redraw}
-          height = '40%'
-          width = '100%'
-          options={{
-            events: ['click'],
-            onClick: (evt, el) => this.handleDataClick(evt, el),
-            animation: {
-              duration: 0
-            },
-            tooltips: {
-              enabled: true,
-              display: true,
-            },
-            legend: {
-              display: true,
-              labels: ['pass', 'error', 'fail']
-            },
-            scales: {
-              xAxes: [{
-                scaleLabel: {
-                  display: true,
-                  labelString: 'Date'
-                },
-                type: 'time',
-                gridLines: {
-                  color: 'rgba(0, 0, 0, 0)',
-                },
-                time: {
-                  unit: 'day',
-                  displayFormats: {
-                    month: 'MMM DD'
-                  },
-                  min: mnDate,
-                  max: mxDate,
-                }
-              }],
-              yAxes: [{
-                scaleLabel: {
-                  display: true,
-                  labelString: 'Seconds'
-                },
-                gridLines: {
-                  borderDash: [8, 4]
-                }, 
-                ticks: {
-                  beginAtZero: true
-                }           
-              }]
-
-            }
-          }}
+          height = {40}
+          width = {100}
+          options={optionsFn((e, el) => this.handleDataClick(el), minDate, maxDate)}
         />
         <div className="legend-ctn">
           <span className="legend-key"><span className="legend-logo pass"></span> Pass</span>
