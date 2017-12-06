@@ -2,16 +2,18 @@ const data = require('./data.js');
 
 module.exports = {
   getData: (req, res) => {
-    let min = req.query.min;
-    let max = req.query.max;
-    let dp = data.slice();
+    const min = req.query.min;
+    const max = req.query.max;
     if (min || max) {
-      dp = dp.filter(item => {
-        if (new Date(item.start_time) >= new Date(min) && new Date(item.start_time) <= new Date(max)) {
+      const filteredData = data.filter(item => {
+        const startTime = new Date(item.start_time);
+        if (startTime >= new Date(min) && startTime <= new Date(max)) {
           return item;
         }
       });
+      res.json(filteredData);
+    } else {
+      res.json(data);
     }
-    res.json(dp);
   }
 };
